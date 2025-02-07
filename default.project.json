@@ -8,8 +8,21 @@
 			"$className": "ReplicatedStorage",
 		
 			"PluginEssentials": {
+				"$className": "Folder",
 				"$ignoreUnknownInstances": true,
 				"$path": "src"
+			},
+
+			"Stories": {
+				"$className": "Folder",
+				"$ignoreUnknownInstances": true,
+				"$path": "Stories"
+			},
+
+			"Packages": {
+				"$className": "Folder",
+				"$ignoreUnknownInstances": true,
+				"$path": "Packages"
 			}
 	  	}
 	}
