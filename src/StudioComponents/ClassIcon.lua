@@ -1,7 +1,7 @@
 -- Written by @boatbomber
 
 local StudioService = game:GetService("StudioService")
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin")
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 
 local StudioComponents = script.Parent

@@ -5,7 +5,7 @@ type styleGuideModifier = Enum.StudioStyleGuideModifier | types.StateObject<Enum
 type computedOrValue = types.Computed<Color3> | types.Value<Color3>
 
 local Studio = settings().Studio
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin")
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 
 local unwrap = require(script.Parent.unwrap)

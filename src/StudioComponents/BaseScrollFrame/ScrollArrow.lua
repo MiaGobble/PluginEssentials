@@ -1,7 +1,7 @@
 -- Roact version by @sircfenner
 -- Ported to Fusion by @YasuYoshida
 
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin")
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 
 local StudioComponents = script.Parent.Parent
