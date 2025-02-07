@@ -32,13 +32,8 @@ local getState = require(script.Parent.getState)
 local unwrap = require(script.Parent.unwrap)
 local types = require(script.Parent.types)
 
-local New = Fusion.New
-local Value = Fusion.Value
-local Computed = Fusion.Computed
-local Children = Fusion.Children
+local Scope = Fusion.scoped(Fusion)
 local OnEvent = Fusion.OnEvent
-local Hydrate = Fusion.Hydrate
-local Observer = Fusion.Observer
 local Cleanup = Fusion.Cleanup
 
 type vector2Value = types.Value<Vector2>
@@ -56,7 +51,7 @@ type DragInputProperites = {
 
 return function(props: DragInputProperites): (vector2Value, types.Computed<Vector2>, types.Value<boolean>)
 	local isEnabled = getState(props.Enabled, true)
-	local isDragging = Value(false)
+	local isDragging = Scope:Value(false)
 
 	local connectionProvider = props.Instance
 	local globalConnection = nil
@@ -65,11 +60,11 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 	local maxValue = getState(props.Max, Vector2.new(1, 1))
 	local minValue = getState(props.Min, Vector2.new(0, 0))
 
-	local range = Computed(function()
+	local range = Scope:Computed(function()
 		return unwrap(maxValue) - unwrap(minValue)
 	end)
 
-	local currentAlpha = Computed(function()
+	local currentAlpha = Scope:Computed(function()
 		return (unwrap(currentValue) - unwrap(minValue)) / unwrap(range)
 	end)
 
@@ -142,14 +137,14 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 		end
 	end
 
-	table.insert(tasks, Observer(props.Instance):onChange(function()
+	table.insert(tasks, Scope:Observer(props.Instance):onChange(function()
 		local connectionProvider = unwrap(connectionProvider, false)
 		if connectionProvider == nil then
 			cleanupTasks()
 		else
 			table.insert(tasks, cleanupGlobalConnection)
 
-			Hydrate(connectionProvider)({
+			Scope:Hydrate(connectionProvider)({
 				[Cleanup] = cleanupTasks,
 				[OnEvent "InputBegan"] = onDragStart,
 				[OnEvent "InputEnded"] = function(inputObject)

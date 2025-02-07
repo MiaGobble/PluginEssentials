@@ -10,12 +10,11 @@ local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 
 local unwrap = require(script.Parent.unwrap)
 
-local Computed = Fusion.Computed
-local Value = Fusion.Value
+local Scope = Fusion.scoped(Fusion)
 
 local currentTheme = {}
 local themeProvider = {
-	Theme = Value(Studio.Theme.Name),
+	Theme = Scope:Value(Studio.Theme.Name),
 	Fonts = {
 		Default = Enum.Font.SourceSans,
 		SemiBold = Enum.Font.SourceSansSemibold,
@@ -23,7 +22,7 @@ local themeProvider = {
 		Black = Enum.Font.GothamBlack,
 		Mono = Enum.Font.Code,
 	},
-	IsDark = Value(true),
+	IsDark = Scope:Value(true),
 }
 
 function themeProvider:GetColor(studioStyleGuideColor: styleStyleGuideColor, studioStyleGuideModifier: styleGuideModifier?): computedOrValue
@@ -53,13 +52,13 @@ function themeProvider:GetColor(studioStyleGuideColor: styleStyleGuideColor, stu
 			return existingValue
 		end
 
-		local newThemeValue = Value(Studio.Theme:GetColor(unwrappedColor, styleGuideModifier))
+		local newThemeValue = Scope:Value(Studio.Theme:GetColor(unwrappedColor, styleGuideModifier))
 		currentTheme[unwrappedColor][styleGuideModifier] = newThemeValue
 
 		return newThemeValue
 	end)()
 
-	return if not hasState then themeValue else Computed(function()
+	return if not hasState then themeValue else Scope:Computed(function()
 		local currentColor = unwrap(studioStyleGuideColor)
 		local currentModifier = unwrap(studioStyleGuideModifier)
 		local currentValueState = self:GetColor(currentColor, currentModifier)
@@ -68,7 +67,7 @@ function themeProvider:GetColor(studioStyleGuideColor: styleStyleGuideColor, stu
 end
 
 function themeProvider:GetFont(fontName: (string | types.StateObject<string>)?): types.Computed<Enum.Font>
-	return Computed(function()
+	return Scope:Computed(function()
 		local givenFontName = unwrap(fontName)
 		local fontToGet = self.Fonts.Default
 		if givenFontName~=nil and self.Fonts[givenFontName] then
@@ -94,10 +93,19 @@ do
 	local themeChangedConnection = Studio.ThemeChanged:Connect(updateTheme)
 	updateTheme()
 
-	Plugin.Unloading:Connect(function()
-		themeChangedConnection:Disconnect()
-		themeChangedConnection = nil
-	end)
+	if Plugin:IsA("Plugin") then
+		Plugin.Unloading:Connect(function()
+			themeChangedConnection:Disconnect()
+			themeChangedConnection = nil
+		end)
+	else
+		Plugin.AncestryChanged:Connect(function()
+			if Plugin.Parent == nil then
+				themeChangedConnection:Disconnect()
+				themeChangedConnection = nil
+			end
+		end)
+	end
 end
 
 return themeProvider

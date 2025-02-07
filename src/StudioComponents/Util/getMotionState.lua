@@ -1,7 +1,7 @@
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 
-local Computed = Fusion.Computed
+local Scope = Fusion.scoped(Fusion)
 
 local unwrap = require(script.Parent.unwrap)
 local types = require(script.Parent.types)
@@ -22,7 +22,7 @@ return function(goalState: types.StateObject<any>, motionStateType: string, ...:
 	local isMotionEnabledAState = unwrap(isMotionEnabled)~=isMotionEnabled
 	
 	if isMotionEnabledAState then
-		return Computed(function()
+		return Scope:Computed(function()
 			if unwrap(isMotionEnabled) then
 				return unwrap(motionGoalState)
 			end

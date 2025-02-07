@@ -1,7 +1,7 @@
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 
-local Computed = Fusion.Computed
+local Scope = Fusion.scoped(Fusion)
 
 local unwrap = require(script.Parent.unwrap)
 local types = require(script.Parent.types)
@@ -20,7 +20,7 @@ return function(modifierInput: modifierInput): types.Computed<any>
 	local isSelected = modifierInput.Selected
 	local isPressed = modifierInput.Pressed
 
-	return Computed(function()
+	return Scope:Computed(function()
 		local isDisabled = not unwrap(isEnabled)
 		local isHovering = unwrap(isHovering)
 		local isSelected = unwrap(isSelected)
