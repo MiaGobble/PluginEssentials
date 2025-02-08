@@ -1,19 +1,16 @@
+-- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
 local StudioComponents = script.Parent
 local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
 local TextInput = require(StudioComponents.TextInput)
-
 local getState = require(StudioComponentsUtil.getState)
 local unwrap = require(StudioComponentsUtil.unwrap)
 local types = require(StudioComponentsUtil.types)
-
-local Computed = Fusion.Computed
+local Scope = Fusion.scoped(Fusion)
 local OnChange = Fusion.OnChange
-local Hydrate = Fusion.Hydrate
 
+-- Types Extended
 type numberInput = (number | types.StateObject<number>)?
 
 export type LimitedTextInputProperties = TextInput.TextInputProperties & {
@@ -79,7 +76,7 @@ return function(props: LimitedTextInputProperties)
 
 	updateWithLimitedText(textBoxRef.Text)
 
-	return Hydrate (textBoxRef) {
+	return Scope:Hydrate (textBoxRef) {
 		[OnChange "Text"] = updateWithLimitedText,
 	}
 end
