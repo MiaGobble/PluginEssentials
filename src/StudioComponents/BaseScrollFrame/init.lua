@@ -1,40 +1,23 @@
--- Written by @boatbomber
--- Modified by @mvyasu
+-- Constants
+local DEFAULT_SCROLL_BAR_THICKNESS = 18
 
+-- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
 local StudioComponents = script.Parent
 local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
 local Background = require(StudioComponents.Background)
-
 local stripProps = require(StudioComponentsUtil.stripProps)
 local getState = require(StudioComponentsUtil.getState)
 local unwrap = require(StudioComponentsUtil.unwrap)
 local types = require(StudioComponentsUtil.types)
-
 local ScrollBar = require(script.ScrollBar)
+local Scope = Fusion.scoped(Fusion)
 local Children = Fusion.Children
 local OnChange = Fusion.OnChange
-local Computed = Fusion.Computed
-local Hydrate = Fusion.Hydrate
-local Value = Fusion.Value
-local New = Fusion.New
-local Ref = Fusion.Ref
 local Out = Fusion.Out
 
-local DEFAULT_SCROLL_BAR_THICKNESS = 18
-local COMPONENT_ONLY_PROPERTIES = {
-	"ScrollingEnabled",
-	"VerticalScrollBarPosition",
-	"VerticalScrollBarInset",
-	"ScrollBarThickness",
-	"ScrollBarBorderMode",
-	"CanvasSize",
-	Children,
-}
-
+-- Types Extended
 export type BaseScrollFrameProperties = {
 	ScrollBarBorderMode:  types.CanBeState<Enum.BorderMode>?,
 	CanvasSize: types.CanBeState<UDim2>?,
@@ -45,26 +28,39 @@ export type BaseScrollFrameProperties = {
 	[any]: any,
 }
 
+-- Constants Extended
+local COMPONENT_ONLY_PROPERTIES = {
+	"ScrollingEnabled",
+	"VerticalScrollBarPosition",
+	"VerticalScrollBarInset",
+	"ScrollBarThickness",
+	"ScrollBarBorderMode",
+	"CanvasSize",
+	Children,
+}
+
 return function(props: BaseScrollFrameProperties): Frame
 	local isEnabled = getState(props.ScrollingEnabled, true)
 	local vertPos = getState(props.VerticalScrollBarPosition, Enum.VerticalScrollBarPosition.Right)
 	local vertInset = getState(props.VerticalScrollBarInset, Enum.ScrollBarInset.ScrollBar)
 	
 	local barVisibility = {
-		Vertical = Value(false),
-		Horizontal = Value(false),
+		Vertical = Scope:Value(false),
+		Horizontal = Scope:Value(false),
 	}
 	
-	local scrollBarThickness = Value(unwrap(props.ScrollBarThickness) or DEFAULT_SCROLL_BAR_THICKNESS)
+	local scrollBarThickness = Scope:Value(unwrap(props.ScrollBarThickness) or DEFAULT_SCROLL_BAR_THICKNESS)
 	
-	local canvasPosition = Value(Vector2.zero)
-	local absCanvasSize = Value(Vector2.zero)
-	local windowSize = Value(Vector2.zero)
-	local absSize = Value(Vector2.zero)
+	local canvasPosition = Scope:Value(Vector2.zero)
+	local absCanvasSize = Scope:Value(Vector2.zero)
+	local windowSize = Scope:Value(Vector2.zero)
+	local absSize = Scope:Value(Vector2.zero)
 
-	local scrollFrame = Value(nil)
+	local scrollFrame = Scope:Value(nil)
+
 	local function computeShowBar()
 		local scrollFrame = unwrap(scrollFrame)
+
 		if scrollFrame==nil then
 			barVisibility.Vertical:set(false)
 			barVisibility.Horizontal:set(false)
@@ -81,8 +77,8 @@ return function(props: BaseScrollFrameProperties): Frame
 	end
 
 	local zIndex = props.ZIndex or 1
-	local childZIndex = Computed(function()
-		return unwrap(zIndex) + 10
+	local childZIndex = Scope:Computed(function(use)
+		return unwrap(zIndex, use) + 10
 	end)
 
 	local containerFrame = Background {
@@ -102,6 +98,7 @@ return function(props: BaseScrollFrameProperties): Frame
 				WindowSize = windowSize,
 				ScrollBarThickness = scrollBarThickness,
 			},
+
 			ScrollBar {
 				ZIndex = childZIndex,
 				
@@ -115,9 +112,8 @@ return function(props: BaseScrollFrameProperties): Frame
 				WindowSize = windowSize,
 				ScrollBarThickness = scrollBarThickness,
 			},
-			New "ScrollingFrame" {
-				[Ref] = scrollFrame,
 
+			scrollFrame:set(Scope:New "ScrollingFrame" {
 				Name = "Canvas",
 				Size = UDim2.fromScale(1, 1),
 				BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png",
@@ -149,10 +145,10 @@ return function(props: BaseScrollFrameProperties): Frame
 				[Children] = {
 					props[Children],
 				}
-			}
+			}),
 		}
 	}
 
 	local hydrateProps = stripProps(props, COMPONENT_ONLY_PROPERTIES)
-	return Hydrate(containerFrame)(hydrateProps)
+	return Scope:Hydrate(containerFrame)(hydrateProps)
 end

@@ -1,27 +1,4 @@
--- Writen by @boatbomber
--- Modified by @mvyasu
-
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local StudioComponents = script.Parent.Parent
-local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
-local ScrollArrow = require(script.Parent.ScrollArrow)
-
-local themeProvider = require(StudioComponentsUtil.themeProvider)
-local getModifier = require(StudioComponentsUtil.getModifier)
-local stripProps = require(StudioComponentsUtil.stripProps)
-local unwrap = require(StudioComponentsUtil.unwrap)
-local types = require(StudioComponentsUtil.types)
-
-local Computed = Fusion.Computed
-local Children = Fusion.Children
-local OnEvent = Fusion.OnEvent
-local Hydrate = Fusion.Hydrate
-local Value = Fusion.Value
-local New = Fusion.New
-
+-- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"VerticalScrollBarPosition",
 	"ScrollBarThickness",
@@ -34,6 +11,22 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"BorderMode",
 }
 
+-- Import
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local StudioComponents = script.Parent.Parent
+local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
+local ScrollArrow = require(script.Parent.ScrollArrow)
+local themeProvider = require(StudioComponentsUtil.themeProvider)
+local getModifier = require(StudioComponentsUtil.getModifier)
+local stripProps = require(StudioComponentsUtil.stripProps)
+local unwrap = require(StudioComponentsUtil.unwrap)
+local types = require(StudioComponentsUtil.types)
+local Scope = Fusion.scoped(Fusion)
+local Children = Fusion.Children
+local OnEvent = Fusion.OnEvent
+
+-- Types Extended
 type ScrollBarProperties = {
 	VerticalScrollBarPosition: types.CanBeState<Enum.VerticalScrollBarPosition>?,
 	BorderMode: types.CanBeState<Enum.BorderMode>?,
@@ -56,71 +49,75 @@ return function(props: ScrollBarProperties): ImageButton
 	local canvasPosition = props.CanvasPosition
 	local windowSize = props.WindowSize
 	
-	local isHoveringHandle = Value(false)
-	local isPressingHandle = Value(false)
+	local isHoveringHandle = Scope:Value(false)
+	local isPressingHandle = Scope:Value(false)
 	
 	local frameBorderMode = props.BorderMode or Enum.BorderMode.Inset
 	local childborderMode = Enum.BorderMode.Outline
 	local borderSize = 1
 	
-	local scrollBarOffset = Computed(function()
+	local scrollBarOffset = Scope:Computed(function(use)
 		local allVisible = true
+
 		for _,visibleState in pairs(props.BarVisibility) do
-			if not unwrap(visibleState) then
+			if not unwrap(visibleState, use) then
 				allVisible = false
 				break
 			end
 		end
-		local isInsetBorder = unwrap(frameBorderMode)==Enum.BorderMode.Inset
-		return if allVisible then -(unwrap(scrollBarThickness) or 0) + (if isInsetBorder then borderSize else 0) else 0
+
+		local isInsetBorder = unwrap(frameBorderMode, use) == Enum.BorderMode.Inset
+		return if allVisible then -(unwrap(scrollBarThickness, use) or 0) + (if isInsetBorder then borderSize else 0) else 0
 	end)
 
-	local scrollBarHandleOffset = Computed(function()
-		local offsetSize = unwrap(scrollBarOffset)
-		local size = (unwrap(props.AbsoluteSize) or Vector2.zero) + (Vector2.one * (unwrap(scrollBarOffset) or Vector2.zero))
-		local scrollbarThickness = unwrap(scrollBarThickness) or 0
-		local isInsetBorder = unwrap(frameBorderMode)==Enum.BorderMode.Inset
-		return (2*scrollbarThickness+(if isInsetBorder then -borderSize*2 else 0))/(if props.IsVertical then size.Y else size.X)
+	local scrollBarHandleOffset = Scope:Computed(function(use)
+		local offsetSize = unwrap(scrollBarOffset, use)
+		local size = (unwrap(props.AbsoluteSize, use) or Vector2.zero) + (Vector2.one * (unwrap(scrollBarOffset, use) or Vector2.zero))
+		local scrollbarThickness = unwrap(scrollBarThickness, use) or 0
+		local isInsetBorder = unwrap(frameBorderMode, use) == Enum.BorderMode.Inset
+		return (2 * scrollbarThickness + (if isInsetBorder then -borderSize*2 else 0)) / (if props.IsVertical then size.Y else size.X)
 	end)
 	
-	return Hydrate(New "Frame" {
+	return Scope:Hydrate(Scope:New "Frame" {
 		Name = (if props.IsVertical then "Vertical" else "Horizontal").."ScrollBar",
 		BorderMode = frameBorderMode,
 		BorderSizePixel = borderSize,
 		
-		Visible = Computed(function()
-			return unwrap(if props.IsVertical then props.BarVisibility.Vertical else props.BarVisibility.Horizontal)
+		Visible = Scope:Computed(function(use)
+			return unwrap(if props.IsVertical then props.BarVisibility.Vertical else props.BarVisibility.Horizontal, use)
 		end),
 		
 		BackgroundColor3 = themeProvider:GetColor(Enum.StudioStyleGuideColor.ScrollBarBackground),
 		BorderColor3 = themeProvider:GetColor(Enum.StudioStyleGuideColor.Border),
 		
-		AnchorPoint = if props.IsVertical then Computed(function()
-			local vert = unwrap(props.VerticalScrollBarPosition)
+		AnchorPoint = if props.IsVertical then Scope:Computed(function(use)
+			local vert = unwrap(props.VerticalScrollBarPosition, use)
+
 			if vert == Enum.VerticalScrollBarPosition.Right then
 				return Vector2.new(1, 0)
-				else
+			else
 				return Vector2.new(0, 0)
 			end
 		end) else Vector2.new(0, 1),
 		
-		Position = if props.IsVertical then Computed(function()
-			local vert = unwrap(props.VerticalScrollBarPosition)
+		Position = if props.IsVertical then Scope:Computed(function(use)
+			local vert = unwrap(props.VerticalScrollBarPosition, use)
+
 			if vert == Enum.VerticalScrollBarPosition.Right then
 				return UDim2.fromScale(1, 0)
-				else
+			else
 				return UDim2.fromScale(0, 0)
 			end
-		end) else Computed(function()
-			local vert = unwrap(props.VerticalScrollBarPosition)
+		end) else Scope:Computed(function(use)
+			local vert = unwrap(props.VerticalScrollBarPosition, use)
 			return UDim2.fromScale(if vert==Enum.VerticalScrollBarPosition.Left then 1 else 0, 1)
 		end),
 		
-		Size = if props.IsVertical then Computed(function()
-			return UDim2.new(0, unwrap(scrollBarThickness), 1, unwrap(scrollBarOffset))
-		end) else Computed(function()
-			local scrollBarThickness = unwrap(scrollBarThickness)
-			return  UDim2.new(1, unwrap(scrollBarOffset), 0, scrollBarThickness)
+		Size = if props.IsVertical then Scope:Computed(function(use)
+			return UDim2.new(0, unwrap(scrollBarThickness, use), 1, unwrap(scrollBarOffset, use))
+		end) else Scope:Computed(function(use)
+			local scrollBarThickness = unwrap(scrollBarThickness, use)
+			return UDim2.new(1, unwrap(scrollBarOffset, use), 0, scrollBarThickness)
 		end),
 
 		[Children] = {
@@ -162,7 +159,7 @@ return function(props: ScrollBarProperties): ImageButton
 			end)(),
 			
 			
-			New "Frame" {
+			Scope:New "Frame" {
 				Name = "Handle",
 				ZIndex = props.ZIndex,
 				BorderMode = childborderMode,
@@ -172,15 +169,15 @@ return function(props: ScrollBarProperties): ImageButton
 				
 				BackgroundColor3 = themeProvider:GetColor(Enum.StudioStyleGuideColor.ScrollBar, getModifier({
 					Enabled = true,
-					Pressed = Computed(function()
-						return unwrap(isPressingHandle) or unwrap(isHoveringHandle)
+					Pressed = Scope:Computed(function(use)
+						return unwrap(isPressingHandle, use) or unwrap(isHoveringHandle, use)
 					end),
 				})),
 			
-				Size = Computed(function()
-					local window = unwrap(windowSize) or Vector2.zero
-					local content = unwrap(absoluteCanvasSize) or Vector2.zero
-					local relativeOffset = unwrap(scrollBarHandleOffset)
+				Size = Scope:Computed(function(use)
+					local window = unwrap(windowSize, use) or Vector2.zero
+					local content = unwrap(absoluteCanvasSize, use) or Vector2.zero
+					local relativeOffset = unwrap(scrollBarHandleOffset, use)
 				
 					return UDim2.fromScale(
 						if props.IsVertical then 1 else (window.X/content.X) * (1-relativeOffset),
@@ -188,12 +185,12 @@ return function(props: ScrollBarProperties): ImageButton
 					)
 				end),
 			
-				Position = Computed(function()
-					local content = unwrap(absoluteCanvasSize) or Vector2.zero
-					local pos = unwrap(canvasPosition) or Vector2.zero
-					local scrollBarThickness = unwrap(scrollBarThickness) or 0
+				Position = Scope:Computed(function(use)
+					local content = unwrap(absoluteCanvasSize, use) or Vector2.zero
+					local pos = unwrap(canvasPosition, use) or Vector2.zero
+					local scrollBarThickness = unwrap(scrollBarThickness, use) or 0
 				
-					local relativeOffset = unwrap(scrollBarHandleOffset) or 0
+					local relativeOffset = unwrap(scrollBarHandleOffset, use) or 0
 					local relativePos = if props.IsVertical then (pos.Y/content.Y) else (pos.X/content.X)
 				
 					if props.IsVertical then

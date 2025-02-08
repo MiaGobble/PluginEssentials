@@ -1,26 +1,4 @@
--- Roact version by @sircfenner
--- Ported to Fusion by @YasuYoshida
-
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local StudioComponents = script.Parent.Parent
-local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
-local themeProvider = require(StudioComponentsUtil.themeProvider)
-local getModifier = require(StudioComponentsUtil.getModifier)
-local stripProps = require(StudioComponentsUtil.stripProps)
-local getState = require(StudioComponentsUtil.getState)
-local unwrap = require(StudioComponentsUtil.unwrap)
-local types = require(StudioComponentsUtil.types)
-
-local Computed = Fusion.Computed
-local OnEvent = Fusion.OnEvent
-local Hydrate = Fusion.Hydrate
-local Cleanup = Fusion.Cleanup
-local Value = Fusion.Value
-local New = Fusion.New
-
+-- Constants
 local DEFAULT_ARROW_SIZE = UDim2.fromOffset(12, 12)
 local DEFAULT_ARROW_IMAGE = "rbxassetid://6677623152"
 local DEFAULT_ARROW_RECT_SIZE = 16
@@ -32,6 +10,21 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"ZIndex",
 }
 
+-- Imports
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local StudioComponents = script.Parent.Parent
+local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
+local themeProvider = require(StudioComponentsUtil.themeProvider)
+local getModifier = require(StudioComponentsUtil.getModifier)
+local stripProps = require(StudioComponentsUtil.stripProps)
+local getState = require(StudioComponentsUtil.getState)
+local unwrap = require(StudioComponentsUtil.unwrap)
+local types = require(StudioComponentsUtil.types)
+local Scope = Fusion.scoped(Fusion)
+local OnEvent = Fusion.OnEvent
+
+-- Types Extended
 type ScrollArrowProperties = {
 	Enabled: types.CanBeState<boolean>?,
 	Direction: types.CanBeState<string>,
@@ -50,28 +43,33 @@ local function getBaseProperties(mainModifier: types.CanBeState<Enum.StudioStyle
 		BackgroundColor3 = themeProvider:GetColor(Enum.StudioStyleGuideColor.ScrollBar, mainModifier),
 		BorderColor3 = themeProvider:GetColor(Enum.StudioStyleGuideColor.Border, mainModifier),
 		
-		AnchorPoint = Computed(function()
-			local currentDirection = unwrap(props.Direction)
+		AnchorPoint = Scope:Computed(function(use)
+			local currentDirection = unwrap(props.Direction, use)
+			
 			if currentDirection=="Down" then
 				return Vector2.new(0, 1)
 			elseif currentDirection=="Right" then
 				return Vector2.new(1, 0)
 			end
+
 			return Vector2.new(0, 0)
 		end),
 		
-		Position = Computed(function()
-			local currentDirection = unwrap(props.Direction)
+		Position = Scope:Computed(function(use)
+			local currentDirection = unwrap(props.Direction, use)
+
 			if currentDirection=="Down" then
 				return UDim2.fromScale(0, 1)
 			elseif currentDirection=="Right" then
 				return UDim2.fromScale(1, 0)
 			end
+
 			return UDim2.fromScale(0, 0)
 		end),
 		
-		ImageRectOffset = Computed(function()
-			local currentDirection = unwrap(props.Direction)
+		ImageRectOffset = Scope:Computed(function(use)
+			local currentDirection = unwrap(props.Direction, use)
+
 			if currentDirection=="Down" then
 				return Vector2.new(0, DEFAULT_ARROW_RECT_SIZE)
 			elseif currentDirection=="Left" then
@@ -79,15 +77,17 @@ local function getBaseProperties(mainModifier: types.CanBeState<Enum.StudioStyle
 			elseif currentDirection=="Right" then
 				return Vector2.new(DEFAULT_ARROW_RECT_SIZE, DEFAULT_ARROW_RECT_SIZE)
 			end
-			return  Vector2.new(0, 0)
+
+			return Vector2.new(0, 0)
 		end),
 	}
 end
 
 return function(props: ScrollArrowProperties): ImageButton
+	local Scope = Scope:innerScope()
 	local isEnabled = getState(props.Enabled, true)
-	local isHovering = Value(false)
-	local isPressed = Value(false)
+	local isHovering = Scope:Value(false)
+	local isPressed = Scope:Value(false)
 	
 	-- no need for hover to be taken into account
 	local arrowModifier = getModifier({
@@ -107,8 +107,10 @@ return function(props: ScrollArrowProperties): ImageButton
 		if hearbeatConnection then
 			return
 		end
+
 		if props.Activated then
 			local nextAt = os.clock() + 0.35
+
 			hearbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
 				local now = os.clock()
 				if now >= nextAt then
@@ -121,21 +123,23 @@ return function(props: ScrollArrowProperties): ImageButton
 		end
 	end
 
-	local zIndex = Computed(function()
-		return unwrap(props.ZIndex) or 2
+	local zIndex = Scope:Computed(function(use)
+		return unwrap(props.ZIndex, use) or 2
 	end)
 
-	local newScrollArrow = New "ImageButton" {
+	table.insert(Scope, disconnectHearbeat)
+
+	local newScrollArrow = Scope:New "ImageButton" {
 		AutoButtonColor = false,
 		ZIndex = zIndex,
 		
-		[Cleanup] = disconnectHearbeat,
-		
-		Active = Computed(function()
-			local isEnabled = unwrap(isEnabled)
+		Active = Scope:Computed(function(use)
+			local isEnabled = unwrap(isEnabled, use)
+
 			if not isEnabled then
 				disconnectHearbeat()
 			end
+
 			return isEnabled
 		end),
 		
@@ -146,9 +150,11 @@ return function(props: ScrollArrowProperties): ImageButton
 				isHovering:set(true)
 			elseif inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
 				isPressed:set(true)
+				
 				if props.Activated then
 					props.Activated()
 				end
+
 				listenToHearbeat()
 			end
 		end,
@@ -171,5 +177,5 @@ return function(props: ScrollArrowProperties): ImageButton
 		end
 	end
 
-	return Hydrate(newScrollArrow)(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+	return Scope:Hydrate(newScrollArrow)(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 end
