@@ -10,8 +10,8 @@ type stateOrAny = types.StateObject<any> | any
 
 return function(inputValue: stateOrAny, defaultValue: stateOrAny, mustBeKind: string?)
 	local stateKind = mustBeKind or "Value"
-	local isInputAState = unwrap(inputValue, false)~=inputValue
-	local isDefaultAState = unwrap(defaultValue, false)~=defaultValue
+	local isInputAState = unwrap(inputValue)~=inputValue
+	local isDefaultAState = unwrap(defaultValue)~=defaultValue
 	
 	if isInputAState and (mustBeKind==nil or inputValue.kind==mustBeKind) then
 		return inputValue

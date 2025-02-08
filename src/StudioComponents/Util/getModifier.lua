@@ -20,11 +20,12 @@ return function(modifierInput: modifierInput): types.Computed<any>
 	local isSelected = modifierInput.Selected
 	local isPressed = modifierInput.Pressed
 
-	return Scope:Computed(function()
-		local isDisabled = not unwrap(isEnabled)
-		local isHovering = unwrap(isHovering)
-		local isSelected = unwrap(isSelected)
-		local isPressed = unwrap(isPressed)
+	return Scope:Computed(function(use)
+		local isDisabled = not unwrap(isEnabled, use)
+		local isHovering = unwrap(isHovering, use)
+		local isSelected = unwrap(isSelected, use)
+		local isPressed = unwrap(isPressed, use)
+
 		if isDisabled then
 			return Enum.StudioStyleGuideModifier.Disabled
 		elseif isSelected then
@@ -34,6 +35,7 @@ return function(modifierInput: modifierInput): types.Computed<any>
 		elseif isHovering then
 			return Enum.StudioStyleGuideModifier.Hover
 		end
-		return unwrap(modifierInput.Otherwise) or Enum.StudioStyleGuideModifier.Default
+
+		return unwrap(modifierInput.Otherwise, use) or Enum.StudioStyleGuideModifier.Default
 	end)
 end

@@ -11,6 +11,7 @@ local Fusion = require(Plugin:FindFirstChild("Fusion", true))
 local unwrap = require(script.Parent.unwrap)
 
 local Scope = Fusion.scoped(Fusion)
+local Peek = Fusion.peek
 
 local currentTheme = {}
 local themeProvider = {
@@ -26,10 +27,10 @@ local themeProvider = {
 }
 
 function themeProvider:GetColor(studioStyleGuideColor: styleStyleGuideColor, studioStyleGuideModifier: styleGuideModifier?): computedOrValue
-	local hasState = (unwrap(studioStyleGuideModifier, false) ~= studioStyleGuideModifier) or (unwrap(studioStyleGuideColor, false) ~= studioStyleGuideColor)
+	local hasState = (unwrap(studioStyleGuideModifier) ~= studioStyleGuideModifier) or (unwrap(studioStyleGuideColor) ~= studioStyleGuideColor)
 
 	local function isCorrectType(value, enumType)
-		local unwrapped = unwrap(value, false)
+		local unwrapped = unwrap(value)
 		local isState = unwrapped ~= value and unwrapped~=nil
 		assert((value==nil or isState) or (typeof(value)=="EnumItem" and value.EnumType==enumType), "Incorrect type")
 	end
@@ -37,8 +38,8 @@ function themeProvider:GetColor(studioStyleGuideColor: styleStyleGuideColor, stu
 	isCorrectType(studioStyleGuideColor, Enum.StudioStyleGuideColor)
 	isCorrectType(studioStyleGuideModifier, Enum.StudioStyleGuideModifier)
 
-	local unwrappedColor = unwrap(studioStyleGuideColor, false)
-	local unwrappedModifier = unwrap(studioStyleGuideModifier, false)
+	local unwrappedColor = unwrap(studioStyleGuideColor)
+	local unwrappedModifier = unwrap(studioStyleGuideModifier)
 
 	if not currentTheme[unwrappedColor] then
 		currentTheme[unwrappedColor] = {}
@@ -58,22 +59,22 @@ function themeProvider:GetColor(studioStyleGuideColor: styleStyleGuideColor, stu
 		return newThemeValue
 	end)()
 
-	return if not hasState then themeValue else Scope:Computed(function()
-		local currentColor = unwrap(studioStyleGuideColor)
-		local currentModifier = unwrap(studioStyleGuideModifier)
+	return if not hasState then themeValue else Scope:Computed(function(use)
+		local currentColor = unwrap(studioStyleGuideColor, use)
+		local currentModifier = unwrap(studioStyleGuideModifier, use)
 		local currentValueState = self:GetColor(currentColor, currentModifier)
-		return currentValueState:get()
+		return Peek(currentValueState)
 	end)
 end
 
 function themeProvider:GetFont(fontName: (string | types.StateObject<string>)?): types.Computed<Enum.Font>
-	return Scope:Computed(function()
-		local givenFontName = unwrap(fontName)
+	return Scope:Computed(function(use)
+		local givenFontName = unwrap(fontName, use)
 		local fontToGet = self.Fonts.Default
 		if givenFontName~=nil and self.Fonts[givenFontName] then
 			fontToGet = self.Fonts[givenFontName]
 		end
-		return unwrap(fontToGet)
+		return unwrap(fontToGet, use)
 	end)
 end
 
