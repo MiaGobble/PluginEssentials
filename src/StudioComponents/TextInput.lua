@@ -1,14 +1,17 @@
--- Roact version by @sircfenner
--- Ported to Fusion by @YasuYoshida
+-- Constants
+local PLACEHOLDER_TEXT_COLOR = Color3.fromRGB(102, 102, 102)
 
+local COMPONENT_ONLY_PROPERTIES = {
+	"Enabled",
+	"ClearTextOnFocus"
+}
+
+-- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
 local StudioComponents = script.Parent
 local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
 local BoxBorder = require(StudioComponents.BoxBorder)
-
 local getMotionState = require(StudioComponentsUtil.getMotionState)
 local themeProvider = require(StudioComponentsUtil.themeProvider)
 local getModifier = require(StudioComponentsUtil.getModifier)
@@ -17,22 +20,12 @@ local constants = require(StudioComponentsUtil.constants)
 local getState = require(StudioComponentsUtil.getState)
 local unwrap = require(StudioComponentsUtil.unwrap)
 local types = require(StudioComponentsUtil.types)
-
-local Computed = Fusion.Computed
+local Scope = Fusion.scoped(Fusion)
 local OnChange = Fusion.OnChange
 local Children = Fusion.Children
-local Hydrate = Fusion.Hydrate
 local OnEvent = Fusion.OnEvent
-local Value = Fusion.Value
-local New = Fusion.New
 
-local PLACEHOLDER_TEXT_COLOR = Color3.fromRGB(102, 102, 102)
-
-local COMPONENT_ONLY_PROPERTIES = {
-	"Enabled",
-	"ClearTextOnFocus"
-}
-
+-- Types Extended
 export type TextInputProperties = {
 	Enabled: (boolean | types.StateObject<boolean>)?,
 	[any]: any,
@@ -40,8 +33,8 @@ export type TextInputProperties = {
 
 return function(props: TextInputProperties): TextLabel
 	local isEnabled = getState(props.Enabled, true)
-	local isHovering = Value(false)
-	local isFocused = Value(false)
+	local isHovering = Scope:Value(false)
+	local isFocused = Scope:Value(false)
 
 	local mainModifier = getModifier({
 		Enabled = isEnabled,
@@ -53,13 +46,13 @@ return function(props: TextInputProperties): TextLabel
 		Hovering = isHovering,
 	})
 
-	local currentTextBounds = Value(Vector2.new())
-	local absoluteTextBoxSize = Value(Vector2.new())
+	local currentTextBounds = Scope:Value(Vector2.new())
+	local absoluteTextBoxSize = Scope:Value(Vector2.new())
 
 	local newTextBox = BoxBorder {
 		Color = getMotionState(themeProvider:GetColor(Enum.StudioStyleGuideColor.InputFieldBorder, borderModifier), "Spring", 40),
 
-		[Children] = New "TextBox" {
+		[Children] = Scope:New "TextBox" {
 			Name = "TextInput",
 			Size = UDim2.new(1, 0, 0, 25),
 			BackgroundColor3 = getMotionState(themeProvider:GetColor(Enum.StudioStyleGuideColor.InputFieldBackground, mainModifier), "Spring", 40),
@@ -68,25 +61,30 @@ return function(props: TextInputProperties): TextLabel
 			TextSize = constants.TextSize,
 			TextColor3 = getMotionState(themeProvider:GetColor(Enum.StudioStyleGuideColor.MainText, mainModifier), "Spring", 40),
 			PlaceholderColor3 = PLACEHOLDER_TEXT_COLOR,
-			TextXAlignment = Computed(function()
-				local bounds = unwrap(currentTextBounds).X + 5 -- because of padding
-				local pixels = unwrap(absoluteTextBoxSize).X
+
+			TextXAlignment = Scope:Computed(function(use)
+				local bounds = unwrap(currentTextBounds, use).X + 5 -- because of padding
+				local pixels = unwrap(absoluteTextBoxSize, use).X
 				return if bounds >= pixels then Enum.TextXAlignment.Right else Enum.TextXAlignment.Left
 			end),
+
 			TextEditable = isEnabled,
 			ClipsDescendants = true,
-			ClearTextOnFocus = Computed(function()
+
+			ClearTextOnFocus = Scope:Computed(function(use)
 				local clearTextOnFocus = (unwrap(props.ClearTextOnFocus) or false)
-				local isEnabled = unwrap(isEnabled)
+				local isEnabled = unwrap(isEnabled, use)
 				return clearTextOnFocus and isEnabled
 			end),
 
 			[OnChange "TextBounds"] = function(newTextBounds)
 				currentTextBounds:set(newTextBounds)
 			end,
+
 			[OnChange "AbsoluteSize"] = function(newAbsoluteSize)
 				absoluteTextBoxSize:set(newAbsoluteSize)
 			end,
+
 			[OnEvent "InputBegan"] = function(inputObject)
 				if not unwrap(isEnabled) then
 					return
@@ -94,6 +92,7 @@ return function(props: TextInputProperties): TextLabel
 					isHovering:set(true)
 				end
 			end,
+
 			[OnEvent "InputEnded"] = function(inputObject)
 				if not unwrap(isEnabled) then
 					return
@@ -101,14 +100,16 @@ return function(props: TextInputProperties): TextLabel
 					isHovering:set(false)
 				end
 			end,
+
 			[OnEvent "Focused"] = function()
 				isFocused:set(true)
 			end,
+
 			[OnEvent "FocusLost"] = function()
 				isFocused:set(false)
 			end,
 
-			[Children] = New "UIPadding" {
+			[Children] = Scope:New "UIPadding" {
 				PaddingLeft = UDim.new(0, 5),
 				PaddingRight = UDim.new(0, 5),
 			},
@@ -116,5 +117,5 @@ return function(props: TextInputProperties): TextLabel
 	}
 
 	local hydrateProps = stripProps(props, COMPONENT_ONLY_PROPERTIES)
-	return Hydrate(newTextBox)(hydrateProps)
+	return Scope:Hydrate(newTextBox)(hydrateProps)
 end
