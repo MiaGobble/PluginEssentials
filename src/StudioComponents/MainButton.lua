@@ -1,30 +1,21 @@
--- Roact version by @sircfenner
--- Ported to Fusion by @YasuYoshida
-
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local StudioComponents = script.Parent
-local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
-local Button = require(StudioComponents.Button)
-
-local Children = Fusion.Children
-local Hydrate = Fusion.Hydrate
-local New = Fusion.New
-
-local baseProperties = {
+-- Constants
+local BASE_PROPERTIES = {
 	TextColorStyle = Enum.StudioStyleGuideColor.DialogMainButtonText,
 	BackgroundColorStyle = Enum.StudioStyleGuideColor.DialogMainButton,
 	BorderColorStyle = Enum.StudioStyleGuideColor.ButtonBorder,
 	Name = "MainButton",
 }
 
+-- Imports
+local StudioComponents = script.Parent
+local Button = require(StudioComponents.Button)
+
 return function(props: Button.ButtonProperties): TextButton
-	for index,value in pairs(baseProperties) do
+	for index,value in pairs(BASE_PROPERTIES) do
 		if props[index]==nil then
 			props[index] = value
 		end
 	end
+	
 	return Button(props)
 end
