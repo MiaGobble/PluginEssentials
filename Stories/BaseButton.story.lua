@@ -15,7 +15,6 @@ return function(Target)
 
     local TestButton = BaseButton {
         Activated = function()
-            print("Button Activated")
         end,
 
         Size = UDim2.fromOffset(100, 50),
