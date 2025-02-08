@@ -1,49 +1,50 @@
--- Written by @boatbomber
+-- Constants
+local COMPONENT_ONLY_PROPERTIES = {
+	"ClassName",
+}
 
+-- Services
 local StudioService = game:GetService("StudioService")
+
+-- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
 local StudioComponents = script.Parent
 local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
 local stripProps = require(StudioComponentsUtil.stripProps)
 local types = require(StudioComponentsUtil.types)
 local unwrap = require(StudioComponentsUtil.unwrap)
+local Scope = Fusion.scoped(Fusion)
 
-local New = Fusion.New
-local Hydrate = Fusion.Hydrate
-local Computed = Fusion.Computed
-
+-- Types Extended
 type ClassIconProperties = {
 	ClassName: (string | types.StateObject<string>),
 	[any]: any,
 }
 
-local COMPONENT_ONLY_PROPERTIES = {
-	"ClassName",
-}
-
 return function(props: ClassIconProperties): Frame
-	local image = Computed(function()
-		local class = unwrap(props.ClassName)
+	local image = Scope:Computed(function(use)
+		local class = unwrap(props.ClassName, use)
 		return StudioService:GetClassIcon(class)
 	end)
 
 	local hydrateProps = stripProps(props, COMPONENT_ONLY_PROPERTIES)
 
-	return Hydrate(New "ImageLabel" {
-		Name = "ClassIcon:"..props.ClassName,
+	return Scope:Hydrate(Scope:New "ImageLabel" {
+		Name = "ClassIcon:" .. props.ClassName,
 		Size = UDim2.fromOffset(16, 16),
 		BackgroundTransparency = 1,
-		Image = Computed(function()
-			return unwrap(image).Image
+
+		Image = Scope:Computed(function(use)
+			return unwrap(image, use).Image
 		end),
-		ImageRectOffset = Computed(function()
-			return unwrap(image).ImageRectOffset
+		
+		ImageRectOffset = Scope:Computed(function(use)
+			return unwrap(image, use).ImageRectOffset
 		end),
-		ImageRectSize = Computed(function()
-			return unwrap(image).ImageRectSize
+
+		ImageRectSize = Scope:Computed(function(use)
+			return unwrap(image, use).ImageRectSize
 		end),
 	})(hydrateProps)
 end
