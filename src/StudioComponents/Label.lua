@@ -1,12 +1,16 @@
--- Roact version by @sircfenner
--- Ported to Fusion by @YasuYoshida
+-- Constants
+local COMPONENT_ONLY_PROPERTIES = {
+	"Enabled",
+	"TextColorStyle",
+	"TextColor3",
+	"TextSize",
+}
 
+-- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
 local StudioComponents = script.Parent
 local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
 local getMotionState = require(StudioComponentsUtil.getMotionState)
 local themeProvider = require(StudioComponentsUtil.themeProvider)
 local getModifier = require(StudioComponentsUtil.getModifier)
@@ -15,18 +19,9 @@ local constants = require(StudioComponentsUtil.constants)
 local getState = require(StudioComponentsUtil.getState)
 local unwrap = require(StudioComponentsUtil.unwrap)
 local types = require(StudioComponentsUtil.types)
+local Scope = Fusion.scoped(Fusion)
 
-local Computed = Fusion.Computed
-local Hydrate = Fusion.Hydrate
-local New = Fusion.New
-
-local COMPONENT_ONLY_PROPERTIES = {
-	"Enabled",
-	"TextColorStyle",
-	"TextColor3",
-	"TextSize",
-}
-
+-- Types Extended
 type LabelProperties = {
 	Enabled: (boolean | types.StateObject<boolean>)?,
 	[any]: any,
@@ -40,13 +35,15 @@ return function(props: LabelProperties): TextLabel
 		Enabled = isEnabled
 	})
 
-	local newLabel = New "TextLabel" {
+	local newLabel = Scope:New "TextLabel" {
 		Name = "Label",
 		Position = UDim2.fromScale(0, 0),
 		AnchorPoint = Vector2.new(0, 0),
-		Size = Computed(function()
-			return UDim2.new(1, 0, 0, unwrap(textSize))
+
+		Size = Scope:Computed(function(use)
+			return UDim2.new(1, 0, 0, unwrap(textSize, use))
 		end),
+
 		Text = "Label",
 		Font = themeProvider:GetFont("Default"),
 		TextColor3 = props.TextColor3 or getMotionState(themeProvider:GetColor(props.TextColorStyle or Enum.StudioStyleGuideColor.MainText, mainModifier), "Spring", 40),
@@ -57,5 +54,5 @@ return function(props: LabelProperties): TextLabel
 	}
 
 	local hydrateProps = stripProps(props, COMPONENT_ONLY_PROPERTIES)
-	return Hydrate(newLabel)(hydrateProps)
+	return Scope:Hydrate(newLabel)(hydrateProps)
 end
