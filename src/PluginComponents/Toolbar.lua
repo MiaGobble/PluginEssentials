@@ -1,16 +1,18 @@
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local Hydrate = Fusion.Hydrate
-
-local COMPONENT_ONLY_PROPERTIES = {
-	"Name",
-}
-
+-- Types
 type ToolbarProperties = {
 	Name: string,
 	[any]: any,
 }
+
+-- Constants
+local COMPONENT_ONLY_PROPERTIES = {
+	"Name",
+}
+
+-- Imports
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local Scope = Fusion.scoped(Fusion)
 
 return function(props: ToolbarProperties): PluginToolbar
 	local newToolbar = Plugin:CreateToolbar(props.Name)
@@ -20,5 +22,5 @@ return function(props: ToolbarProperties): PluginToolbar
 		hydrateProps[propertyName] = nil
 	end
 
-	return Hydrate(newToolbar)(hydrateProps)
+	return Scope:Hydrate(newToolbar)(hydrateProps)
 end

@@ -1,16 +1,4 @@
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local PluginComponents = script.Parent
-local StudioComponents = PluginComponents.Parent:FindFirstChild("StudioComponents")
-local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
-local unwrap = require(StudioComponentsUtil.unwrap)
-local types = require(StudioComponentsUtil.types)
-
-local Observer = Fusion.Observer
-local Hydrate = Fusion.Hydrate
-
+-- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"ToolTip",
 	"Name",
@@ -19,6 +7,17 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"Active",
 }
 
+-- Imports
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local PluginComponents = script.Parent
+local StudioComponents = PluginComponents.Parent:FindFirstChild("StudioComponents")
+local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
+local unwrap = require(StudioComponentsUtil.unwrap)
+local types = require(StudioComponentsUtil.types)
+local Scope = Fusion.scoped(Fusion)
+
+-- Types Extended
 type ToolbarProperties = {
 	Active: types.CanBeState<boolean>?,
 	Toolbar: PluginToolbar,
@@ -37,8 +36,9 @@ return function(props: ToolbarProperties)
 
 	if props.Active~=nil then
 		toolbarButton:SetActive(unwrap(props.Active))
+		
 		if unwrap(props.Active)~=props.Active then
-			Plugin.Unloading:Connect(Observer(props.Active):onChange(function()
+			Plugin.Unloading:Connect(Scope:Observer(props.Active):onChange(function()
 				toolbarButton:SetActive(unwrap(props.Active, false))
 			end))
 		end
@@ -49,5 +49,5 @@ return function(props: ToolbarProperties)
 		hydrateProps[propertyName] = nil
 	end
 
-	return Hydrate(toolbarButton)(hydrateProps)
+	return Scope:Hydrate(toolbarButton)(hydrateProps)
 end

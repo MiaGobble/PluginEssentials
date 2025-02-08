@@ -1,8 +1,4 @@
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local Hydrate = Fusion.Hydrate
-
+-- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"Id",
 	"InitialDockTo",
@@ -13,6 +9,12 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"Plugin"
 }
 
+-- Imports
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local Scope = Fusion.scoped(Fusion)
+
+-- Types Extended
 type PluginGuiProperties = {
 	Id: string,
 	Name: string,
@@ -27,6 +29,7 @@ type PluginGuiProperties = {
 return function(props: PluginGuiProperties)	
 	local newWidget = Plugin:CreateDockWidgetPluginGui(
 		props.Id, 
+
 		DockWidgetPluginGuiInfo.new(
 			if typeof(props.InitialDockTo) == "string" then Enum.InitialDockState[props.InitialDockTo] else props.InitialDockTo,
 			props.InitialEnabled,
@@ -46,5 +49,5 @@ return function(props: PluginGuiProperties)
 		props.Enabled:set(newWidget.Enabled)
 	end
 
-	return Hydrate(newWidget)(props)
+	return Scope:Hydrate(newWidget)(props)
 end
