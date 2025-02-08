@@ -1,44 +1,15 @@
--- Roact version by @sircfenner
--- Ported to Fusion by @YasuYoshida
-
---[[
-
-	1. onInputBegan
-		setState({ Dragging = true })
-		if widget then
-			globalConnection = RunService.Heartbeat(() => onInput(widget.relativePosition))
-		else
-			globalConnection = InputService.InputChanged(() => onInput(input.Position))
-	2. onInputEnded
-		setState({ Dragging = false })
-		globalConnection:Disconnect()
-	3. onInputChanged
-		if state.Dragging then
-			onInput(input.Position)
-	guiObject.InputBegan(onInputBegan)
-	guiObject.InputEnded(onInputEnded)
-	guiObject.InputChanged(onInputChanged)
-	(3) is useful in the widget case because
-	- heartbeat is a frame late
-	- changed will fire on same frame at least while mouse is over the area
-	- so we only get frame-late input when mouse is outside the area
-
---]]
-
+-- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
 local getState = require(script.Parent.getState)
 local unwrap = require(script.Parent.unwrap)
 local types = require(script.Parent.types)
-
 local Scope = Fusion.scoped(Fusion)
 local OnEvent = Fusion.OnEvent
-local Cleanup = Fusion.Cleanup
 
+-- Types Extended
 type vector2Value = types.Value<Vector2>
 type vector2Input = (Vector2 | vector2Value)?
-
 type DragInputProperites = {
 	Instance: GuiObject,
 	Enabled: (boolean | types.StateObject<boolean>)?,
@@ -60,16 +31,17 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 	local maxValue = getState(props.Max, Vector2.new(1, 1))
 	local minValue = getState(props.Min, Vector2.new(0, 0))
 
-	local range = Scope:Computed(function()
-		return unwrap(maxValue) - unwrap(minValue)
+	local range = Scope:Computed(function(use)
+		return unwrap(maxValue, use) - unwrap(minValue, use)
 	end)
 
-	local currentAlpha = Scope:Computed(function()
-		return (unwrap(currentValue) - unwrap(minValue)) / unwrap(range)
+	local currentAlpha = Scope:Computed(function(use)
+		return (unwrap(currentValue, use) - unwrap(minValue, use)) / unwrap(range, use)
 	end)
 
 	local function processInput(position)
 		local connectionProvider = unwrap(connectionProvider, false)
+
 		if connectionProvider then
 			local offset = position - connectionProvider.AbsolutePosition
 			local alpha = offset / connectionProvider.AbsoluteSize
@@ -102,6 +74,7 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 	local function onDragStart(inputObject)
 		local connectionProvider = unwrap(connectionProvider)
 		local currentlyDragging = unwrap(isDragging)
+
 		if not unwrap(isEnabled) or currentlyDragging or inputObject.UserInputType ~= Enum.UserInputType.MouseButton1 or connectionProvider==nil or globalConnection then
 			return
 		end
@@ -138,21 +111,25 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 	end
 
 	table.insert(tasks, Scope:Observer(props.Instance):onChange(function()
-		local connectionProvider = unwrap(connectionProvider, false)
+		local connectionProvider = unwrap(connectionProvider)
+
 		if connectionProvider == nil then
 			cleanupTasks()
 		else
 			table.insert(tasks, cleanupGlobalConnection)
 
 			Scope:Hydrate(connectionProvider)({
-				[Cleanup] = cleanupTasks,
+				--[Cleanup] = cleanupTasks,
+				
 				[OnEvent "InputBegan"] = onDragStart,
+
 				[OnEvent "InputEnded"] = function(inputObject)
 					if inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
 						isDragging:set(false)
 						cleanupGlobalConnection()
 					end
 				end,
+
 				[OnEvent "InputChanged"] = function(inputObject)
 					if unwrap(isDragging) then
 						processInput(Vector2.new(inputObject.Position.X, inputObject.Position.Y))
