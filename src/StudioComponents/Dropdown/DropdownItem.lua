@@ -1,30 +1,26 @@
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local StudioComponents = script.Parent.Parent
-local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
-local themeProvider = require(StudioComponentsUtil.themeProvider)
-local getModifier = require(StudioComponentsUtil.getModifier)
-local constants = require(StudioComponentsUtil.constants)
-local getState = require(StudioComponentsUtil.getState)
-local unwrap = require(StudioComponentsUtil.unwrap)
-
-local dropdownConstants = require(script.Parent.Constants)
-
-local Computed = Fusion.Computed
-local Children = Fusion.Children
-local OnEvent = Fusion.OnEvent
-local Hydrate = Fusion.Hydrate
-local Value = Fusion.Value
-local New = Fusion.New
-
+-- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"OnSelected",
 	"Enabled",
 	"Item"
 }
 
+-- Imports
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local StudioComponents = script.Parent.Parent
+local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
+local themeProvider = require(StudioComponentsUtil.themeProvider)
+local getModifier = require(StudioComponentsUtil.getModifier)
+local constants = require(StudioComponentsUtil.constants)
+local getState = require(StudioComponentsUtil.getState)
+local unwrap = require(StudioComponentsUtil.unwrap)
+local dropdownConstants = require(script.Parent.Constants)
+local Scope = Fusion.scoped(Fusion)
+local Children = Fusion.Children
+local OnEvent = Fusion.OnEvent
+
+-- Types Extended
 type DropdownItemProperties = {
 	OnSelected: ((selectedOption: any) -> nil),
 	Item: any,
@@ -33,14 +29,14 @@ type DropdownItemProperties = {
 
 return function(props: DropdownItemProperties): TextButton
 	local isEnabled = getState(props.Enabled, true)
-	local isHovering = Value(false)
+	local isHovering = Scope:Value(false)
 
 	local modifier = getModifier({
 		Enabled = isEnabled,
 		Hovering = isHovering,
 	})
 	
-	local newDropdownItem = New "TextButton" {
+	local newDropdownItem = Scope:New "TextButton" {
 		AutoButtonColor = false,
 		Name = "DropdownItem",
 		Size = UDim2.new(1, 0, 0, 15),
@@ -60,6 +56,7 @@ return function(props: DropdownItemProperties): TextButton
 				isHovering:set(true)
 			end
 		end,
+
 		[OnEvent "InputEnded"] = function(inputObject)
 			if not unwrap(isEnabled) then
 				return
@@ -67,18 +64,20 @@ return function(props: DropdownItemProperties): TextButton
 				isHovering:set(false)
 			end
 		end,
+
 		[OnEvent "Activated"] = function()
 			props.OnSelected(props.Item)
 		end,
 		
 		[Children] = {
-			New "UIPadding" {
+			Scope:New "UIPadding" {
 				PaddingLeft = UDim.new(0, dropdownConstants.TextPaddingLeft - 1),
 				PaddingRight = UDim.new(0, dropdownConstants.TextPaddingRight),
 			},
-			Computed(function()
-				if unwrap(constants.CurvedBoxes, false) then
-					return New "UICorner" {
+
+			Scope:Computed(function(use)
+				if unwrap(constants.CurvedBoxes, use) then
+					return Scope:New "UICorner" {
 						CornerRadius = constants.CornerRadius
 					}
 				end
@@ -87,9 +86,10 @@ return function(props: DropdownItemProperties): TextButton
 	}
 	
 	local hydrateProps = table.clone(props)
+	
 	for _,propertyIndex in pairs(COMPONENT_ONLY_PROPERTIES) do
 		hydrateProps[propertyIndex] = nil
 	end
 	
-	return Hydrate(newDropdownItem)(hydrateProps)
+	return Scope:Hydrate(newDropdownItem)(hydrateProps)
 end

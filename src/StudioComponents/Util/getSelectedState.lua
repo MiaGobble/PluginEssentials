@@ -8,9 +8,9 @@ type GetSelectedStateProperties = {
 }
 
 return function(props: GetSelectedStateProperties): ()->any
-	return function()
-		local currentValue = unwrap(props.Value)
-		local availableOptions = unwrap(props.Options) or {}
+	return function(use)
+		local currentValue = unwrap(props.Value, use)
+		local availableOptions = unwrap(props.Options, use) or {}
 		if currentValue==nil or not table.find(availableOptions, currentValue) then
 			local _,nextItem = next(availableOptions)
 			if nextItem~=nil then
