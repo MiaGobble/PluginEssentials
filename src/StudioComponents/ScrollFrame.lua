@@ -1,35 +1,26 @@
--- Written by @boatbomber
--- Modified by @mvyasu
-
-local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
-local Fusion = require(Plugin:FindFirstChild("Fusion", true))
-
-local StudioComponents = script.Parent
-local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
-
-local BaseScrollFrame = require(StudioComponents.BaseScrollFrame)
-
-local themeProvider = require(StudioComponentsUtil.themeProvider)
-local stripProps = require(StudioComponentsUtil.stripProps)
-local getState = require(StudioComponentsUtil.getState)
-local unwrap = require(StudioComponentsUtil.unwrap)
-local types = require(StudioComponentsUtil.types)
-
-local Children = Fusion.Children
-local Computed = Fusion.Computed
-local Hydrate = Fusion.Hydrate
-local Value = Fusion.Value
-local New = Fusion.New
-local Out = Fusion.Out
-
+-- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"CanvasScaleConstraint",
 	"UIPadding",
 	"UILayout",
 }
 
--- if you're using this component with the default sizes of the other components
--- you'll need to have CanvasScaleConstraint set to Enum.ScrollingDirection.X
+-- Imports
+local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
+local Fusion = require(Plugin:FindFirstChild("Fusion", true))
+local StudioComponents = script.Parent
+local StudioComponentsUtil = StudioComponents:FindFirstChild("Util")
+local BaseScrollFrame = require(StudioComponents.BaseScrollFrame)
+local themeProvider = require(StudioComponentsUtil.themeProvider)
+local stripProps = require(StudioComponentsUtil.stripProps)
+local getState = require(StudioComponentsUtil.getState)
+local unwrap = require(StudioComponentsUtil.unwrap)
+local types = require(StudioComponentsUtil.types)
+local Scope = Fusion.scoped(Fusion)
+local Children = Fusion.Children
+local Out = Fusion.Out
+
+-- Types Extended
 export type ScrollFrameProperties = BaseScrollFrame.BaseScrollFrameProperties & {
 	CanvasScaleConstraint: types.CanBeState<Enum.ScrollingDirection?>?,
 	UIPadding: UIPadding?,
@@ -37,22 +28,22 @@ export type ScrollFrameProperties = BaseScrollFrame.BaseScrollFrameProperties & 
 } 
 
 return function(props: ScrollFrameProperties): Frame
-	local contentSize = Value(Vector2.zero)
+	local contentSize = Scope:Value(Vector2.zero)
 	local contentPadding = {
-		Bottom = Value(UDim.new()),
-		Top = Value(UDim.new()),
-		Left = Value(UDim.new()),
-		Right = Value(UDim.new()),
+		Bottom = Scope:Value(UDim.new()),
+		Top = Scope:Value(UDim.new()),
+		Left = Scope:Value(UDim.new()),
+		Right = Scope:Value(UDim.new()),
 	}
 	
 	if props.UILayout then
-		Hydrate(props.UILayout)({
+		Scope:Hydrate(props.UILayout)({
 			[Out "AbsoluteContentSize"] = contentSize,
 		})
 	end
 
 	if props.UIPadding then
-		Hydrate(props.UIPadding)({
+		Scope:Hydrate(props.UIPadding)({
 			[Out "PaddingBottom"] = contentPadding.Bottom,
 			[Out "PaddingTop"] = contentPadding.Top,
 			[Out "PaddingLeft"] = contentPadding.Left,
@@ -64,14 +55,14 @@ return function(props: ScrollFrameProperties): Frame
 	scrollFrameProps[Children] = {props.UIPadding, props.UILayout, props[Children]}
 	
 	for index,value in pairs {
-		CanvasSize = Computed(function()
-			local contentSize = unwrap(contentSize) or Vector2.zero
+		CanvasSize = Scope:Computed(function(use)
+			local contentSize = unwrap(contentSize, use) or Vector2.zero
 			local currentPadding = {}
 			for index,value in pairs(contentPadding) do
-				currentPadding[index] = unwrap(value) or UDim.new()
+				currentPadding[index] = unwrap(value, use) or UDim.new()
 			end
 
-			local scaleConstraint = unwrap(props.CanvasScaleConstraint)
+			local scaleConstraint = unwrap(props.CanvasScaleConstraint, use)
 			local isXConstrained = if scaleConstraint then table.find({"XY", "X"}, scaleConstraint.Name)~=nil else false
 			local isYConstrained = if scaleConstraint then table.find({"XY", "Y"}, scaleConstraint.Name)~=nil else false
 			
