@@ -26,7 +26,6 @@ local unwrap = require(StudioComponentsUtil.unwrap)
 local types = require(StudioComponentsUtil.types)
 local Scope = Fusion.scoped(Fusion)
 local Children = Fusion.Children
-local Ref = Fusion.Ref
 
 -- Types Extended
 type ColorPickerProperties = {
