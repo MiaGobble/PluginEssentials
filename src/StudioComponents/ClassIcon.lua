@@ -34,7 +34,7 @@ return function(props: ClassIconProperties): Frame
 	local hydrateProps = stripProps(props, COMPONENT_ONLY_PROPERTIES)
 
 	return Scope:Hydrate(Scope:New "ImageLabel" {
-		Name = "ClassIcon:" .. props.ClassName,
+		Name = "ClassIcon",
 		Size = UDim2.fromOffset(16, 16),
 		BackgroundTransparency = 1,
 
