@@ -1,3 +1,5 @@
+local Story = {}
+
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -10,14 +12,26 @@ local Packages = ReplicatedStorage.Packages
 local Fusion = require(Packages.Fusion)
 local Scope = Fusion.scoped(Fusion)
 
-return function(Target)
+Story.fusion = Fusion
+
+Story.controls = {
+    Value = true,
+    Enabled = true,
+    Text = "Checkbox",
+}
+
+Story.story = function(Properties)
     local self = Scope:innerScope()
 
     local TestCheckbox = Checkbox {
         Size = UDim2.fromOffset(100, 50),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
-        Parent = Target,
+        Parent = Properties.target,
+
+        Value = Properties.controls.Value,
+        Enabled = Properties.controls.Enabled,
+        Text = Properties.controls.Text,
     }
 
     table.insert(self, TestCheckbox)
@@ -26,3 +40,5 @@ return function(Target)
         self:doCleanup()
     end
 end
+
+return Story

@@ -1,3 +1,5 @@
+local Story = {}
+
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -10,20 +12,33 @@ local Packages = ReplicatedStorage.Packages
 local Fusion = require(Packages.Fusion)
 local Scope = Fusion.scoped(Fusion)
 
-return function(Target)
+Story.fusion = Fusion
+
+Story.controls = {
+    Enabled = true,
+    GraphemeLimit = 5,
+    TextLimit = 5,
+}
+
+Story.story = function(Properties)
     local self = Scope:innerScope()
 
     table.insert(self, LimitedTextInput {
         Text = "",
-        TextLimit = 5,
-        PlaceholderText = "Max 5 chars",
-        Size = UDim2.fromOffset(100, 50),
+        PlaceholderText = "Limited Input",
+        Size = UDim2.fromOffset(250, 30),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
-        Parent = Target,
+        Parent = Properties.target,
+
+        GraphemeLimit = Properties.controls.GraphemeLimit,
+        TextLimit = Properties.controls.TextLimit,
+        Enabled = Properties.controls.Enabled,
     })
 
     return function()
         self:doCleanup()
     end
 end
+
+return Story

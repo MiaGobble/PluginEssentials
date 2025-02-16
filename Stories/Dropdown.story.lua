@@ -1,3 +1,5 @@
+local Story = {}
+
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -10,30 +12,40 @@ local Packages = ReplicatedStorage.Packages
 local Fusion = require(Packages.Fusion)
 local Scope = Fusion.scoped(Fusion)
 
-return function(Target)
+Story.fusion = Fusion
+
+Story.controls = {
+    Enabled = true,
+    MaxVisibleItems = 5,
+    OptionCount = 6,
+}
+
+Story.story = function(Properties)
     local self = Scope:innerScope()
 
     table.insert(self, Dropdown {
         Size = UDim2.fromOffset(150, 50),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
-        Parent = Target,
+        Parent = Properties.target,
         
-        Options = {
-            "Option 1",
-            "Option 2",
-            "Option 3",
-            "Option 4",
-            "Option 5",
-            "Option 6",
-        },
+        Options = self:Computed(function(use)
+            local Options = {}
 
-        OnSelected = function(option)
+            for i = 1, use(Properties.controls.OptionCount) do
+                table.insert(Options, `Test Option {i}`)
+            end
 
-        end
+            return Options
+        end),
+
+        Enabled = Properties.controls.Enabled,
+        MaxVisibleItems = Properties.controls.MaxVisibleItems,
     })
 
     return function()
         self:doCleanup()
     end
 end
+
+return Story

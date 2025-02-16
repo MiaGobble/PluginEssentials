@@ -1,3 +1,5 @@
+local Story = {}
+
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -20,17 +22,24 @@ local Children = Fusion.Children
 -- 	[any]: any,
 -- }
 
-return function(Target)
+Story.fusion = Fusion
+
+Story.controls = {
+    Enabled = true,
+    Collapsed = true,
+}
+
+Story.story = function(Properties)
     local self = Scope:innerScope()
 
     table.insert(self, VerticalCollapsibleSection {
-        Collapsed = true,
         Padding = UDim.new(0, 5),
-        Enabled = true,
-        --Size = UDim2.fromOffset(150, 50),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
-        Parent = Target,
+        Parent = Properties.target,
+
+        Enabled = Properties.controls.Enabled,
+        Collapsed = Properties.controls.Collapsed,
 
         [Children] = {
             BaseScrollFrame {
@@ -77,3 +86,5 @@ return function(Target)
         self:doCleanup()
     end
 end
+
+return Story

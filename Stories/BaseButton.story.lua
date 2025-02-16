@@ -1,3 +1,5 @@
+local Story = {}
+
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -10,17 +12,22 @@ local Packages = ReplicatedStorage.Packages
 local Fusion = require(Packages.Fusion)
 local Scope = Fusion.scoped(Fusion)
 
-return function(Target)
+Story.fusion = Fusion
+
+Story.controls = {
+    Enabled = true,
+}
+
+Story.story = function(Properties)
     local self = Scope:innerScope()
 
     local TestButton = BaseButton {
-        Activated = function()
-        end,
-
         Size = UDim2.fromOffset(100, 50),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
-        Parent = Target,
+        Parent = Properties.target,
+
+        Enabled = Properties.controls.Enabled,
     }
 
     table.insert(self, TestButton)
@@ -29,3 +36,5 @@ return function(Target)
         self:doCleanup()
     end
 end
+
+return Story
