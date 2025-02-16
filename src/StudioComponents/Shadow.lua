@@ -21,54 +21,40 @@ local Scope = Fusion.scoped(Fusion)
 local SideData = {
 	top = {
 		image = "rbxassetid://6528009956",
-		size = Scope:Computed(function(use)
-			return UDim2.new(1,0,0,use(constants.TextSize))
-		end),
-		position = Scope:Computed(function(use)
-			return UDim2.new(0,0,0,use(constants.TextSize))
-		end)
+		size = UDim2.new(1, 0, 0, constants.TextSize),
+		position = UDim2.new(0, 0, 0, 0),
+		anchorPoint = Vector2.new(0, 1),
 	},
 
 	bottom = {
 		image = "rbxassetid://6185927567",
-		size = Scope:Computed(function(use)
-			return UDim2.new(1,0,0,use(constants.TextSize))
-		end),
-		position = Scope:Computed(function(use)
-			return UDim2.new(0,0,1,0)
-		end)
+		size = UDim2.new(1, 0, 0, constants.TextSize),
+		position = UDim2.new(0, 0, 1, 0),
+		anchorPoint = Vector2.new(0, 0),
 	},
 
 	left = {
 		image = "rbxassetid://6978297327",
-		size = Scope:Computed(function(use)
-			return UDim2.new(0,use(constants.TextSize),1,0)
-		end),
-		position = Scope:Computed(function(use)
-			return UDim2.new(0,use(constants.TextSize),0,0)
-		end)
+		size = UDim2.new(0, constants.TextSize, 1, 0),
+		position = UDim2.new(0, 0, 0, 0),
+		anchorPoint = Vector2.new(1, 0),
 	},
 
 	right = {
 		image = "rbxassetid://6441569774",
-		size = Scope:Computed(function(use)
-			return UDim2.new(0,use(constants.TextSize),1,0)
-		end),
-		position = Scope:Computed(function(use)
-			return UDim2.new(1,0,0,0)
-		end)
+		size = UDim2.new(0, constants.TextSize, 1, 0),
+		position = UDim2.new(1, 0, 0, 0),
+		anchorPoint = Vector2.new(0, 0),
 	},
 }
 
 
 return function(props: ShadowProperties): Frame
-	local Side = SideData[string.lower(props.Side or "right")]
-
 	return Scope:New "ImageLabel" { -- Shadow
 		Name = "Shadow",
 		BackgroundTransparency = 1,
 		LayoutOrder = props.LayoutOrder or 10000,
-		Image = Side.image,
+
 		ImageTransparency = Scope:Computed(function(use)
 			if not unwrap(themeProvider.IsDark, use)then
 				-- Softer shadows on light themes
@@ -78,7 +64,28 @@ return function(props: ShadowProperties): Frame
 			end
 		end),
 
-		Size = Side.size,
-		Position = Side.position,
+		Image = Scope:Computed(function(use)
+			local Side = SideData[string.lower(unwrap(props.Side, use) or "right")]
+
+			return Side.image
+		end),
+
+		Size = Scope:Computed(function(use)
+			local Side = SideData[string.lower(unwrap(props.Side, use) or "right")]
+
+			return Side.size
+		end),
+
+		Position = Scope:Computed(function(use)
+			local Side = SideData[string.lower(unwrap(props.Side, use) or "right")]
+
+			return Side.position
+		end),
+
+		AnchorPoint = Scope:Computed(function(use)
+			local Side = SideData[string.lower(unwrap(props.Side, use) or "right")]
+
+			return Side.anchorPoint
+		end),
 	}
 end
