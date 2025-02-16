@@ -7,6 +7,11 @@ This is a repository with components that I find essential to making plugins wit
 
 There's no documentation at the moment, but each component has a property type that should give you an idea of what it expects for the properties.
 
+## Installation
+You can install:
+* Via [Wally](https://wally.run/package/miagobble/pluginessentials) (recommended)
+* Via the [releases page](https://github.com/MiaGobble/PluginEssentials/releases/tag/v0.1.0) (not recommended)
+
 ## PluginComponents
 
 These components use specific properties to create their corresponding plugin object. Afterwards, they use Hydrate on the created object and return it. You don't need to use these components, but the most useful one by far is the Widget component.
