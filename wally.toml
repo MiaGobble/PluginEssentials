@@ -1,5 +1,5 @@
 [package]
-name = "c5599/pluginessentials"
+name = "miagobble/pluginessentials"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
