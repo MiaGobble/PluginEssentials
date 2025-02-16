@@ -36,7 +36,15 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 	end)
 
 	local currentAlpha = Scope:Computed(function(use)
-		return (unwrap(currentValue, use) - unwrap(minValue, use)) / unwrap(range, use)
+		local range = unwrap(range, use)
+
+		if range.X == 0 then
+			return (unwrap(currentValue, use) - unwrap(minValue, use)) / range.Y
+		elseif range.Y == 0 then
+			return (unwrap(currentValue, use) - unwrap(minValue, use)) / range.X
+		end
+
+		return (unwrap(currentValue, use) - unwrap(minValue, use)) / range
 	end)
 
 	local function processInput(position)
@@ -46,7 +54,7 @@ return function(props: DragInputProperites): (vector2Value, types.Computed<Vecto
 			local offset = position - connectionProvider.AbsolutePosition
 			local alpha = offset / connectionProvider.AbsoluteSize
 
-			local range = unwrap(range, false)
+			local range = unwrap(range)
 			local step = unwrap(props.Step or Vector2.new(-1, -1), false)
 
 			local value = range * alpha
