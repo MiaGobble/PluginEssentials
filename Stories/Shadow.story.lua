@@ -22,10 +22,6 @@ return function(Target)
         AnchorPoint = Vector2.new(0.5, 0.5),
 
         [Children] = {
-            self:New "UIStroke" {
-                Thickness = 1,
-            },
-
             Shadow {
                 Side = "bottom",
             }
