@@ -1,6 +1,6 @@
 # PluginEssentials
-[![GitHub Issues](https://img.shields.io/github/issues/mvyasu/PluginEssentials.svg)](https://github.com/mvyasu/PluginEssentials/issues)
-[![GitHub Stars](https://img.shields.io/github/stars/mvyasu/PluginEssentials.svg)](https://github.com/mvyasu/PluginEssentials/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/MiaGobble/PluginEssentials.svg)](https://github.com/MiaGobble/PluginEssentials/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/MiaGobble/PluginEssentials.svg)](https://github.com/MiaGobble/PluginEssentials/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 This is a repository with components that I find essential to making plugins with [Fusion](https://github.com/Elttob/Fusion). You'll find in the src folder that there's two folders. Each one has a specific set of components which you can learn more about below.
