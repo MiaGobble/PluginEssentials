@@ -1,3 +1,7 @@
+-- Written by @boatbomber
+-- Modified by @mvyasu
+-- Modified by @iGottic
+
 -- Constants
 local DEFAULT_SCROLL_BAR_THICKNESS = 18
 

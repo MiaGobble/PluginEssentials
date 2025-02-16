@@ -1,3 +1,7 @@
+-- Written by @boatbomber
+-- Modified by @mvyasu
+-- Modified by @iGottic
+
 -- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"CanvasScaleConstraint",

@@ -1,3 +1,6 @@
+-- Written by @boatbomber
+-- Modified by @iGottic
+
 -- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"Progress",

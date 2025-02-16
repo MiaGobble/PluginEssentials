@@ -1,3 +1,7 @@
+-- Roact version by @sircfenner
+-- Ported to Fusion by @YasuYoshida
+-- Modified by @iGottic
+
 -- Constants
 local BASE_PROPERTIES = {
 	TextColorStyle = Enum.StudioStyleGuideColor.DialogMainButtonText,

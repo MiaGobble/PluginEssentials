@@ -1,3 +1,6 @@
+-- Written by @boatbomber
+-- Modified by @iGottic
+
 -- Types
 type ShadowProperties = {
     Side: string,

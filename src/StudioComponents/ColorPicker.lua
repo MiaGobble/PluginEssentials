@@ -1,3 +1,7 @@
+-- Roact version by @sircfenner
+-- Ported to Fusion by @YasuYoshida
+-- Modified by @iGottic
+
 -- Constants
 local COMPONENT_ONLY_PROPERTIES = {
 	"ZIndex",

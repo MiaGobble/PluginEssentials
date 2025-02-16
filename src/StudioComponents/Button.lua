@@ -1,3 +1,5 @@
+-- Modified by @iGottic
+
 -- Imports
 local StudioComponents = script.Parent
 local BaseButton = require(StudioComponents.BaseButton)

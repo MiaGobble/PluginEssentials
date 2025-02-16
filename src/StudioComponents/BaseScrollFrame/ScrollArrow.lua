@@ -1,3 +1,7 @@
+-- Roact version by @sircfenner
+-- Ported to Fusion by @YasuYoshida
+-- Modified by @iGottic
+
 -- Constants
 local DEFAULT_ARROW_SIZE = UDim2.fromOffset(12, 12)
 local DEFAULT_ARROW_IMAGE = "rbxassetid://6677623152"

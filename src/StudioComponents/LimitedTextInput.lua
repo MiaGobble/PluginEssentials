@@ -1,3 +1,5 @@
+-- Modified @iGottic
+
 -- Imports
 local Plugin = script:FindFirstAncestorWhichIsA("Plugin") or game
 local Fusion = require(Plugin:FindFirstChild("Fusion", true))
