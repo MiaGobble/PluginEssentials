@@ -5,9 +5,14 @@ registry = "test"
 [[package]]
 name = "c5599/pluginessentials"
 version = "0.1.0"
-dependencies = [["Fusion", "elttob/fusion@0.3.0"]]
+dependencies = [["Fusion", "elttob/fusion@0.3.0"], ["UILabs", "pepeeltoro41/ui-labs@2.3.7"]]
 
 [[package]]
 name = "elttob/fusion"
 version = "0.3.0"
+dependencies = []
+
+[[package]]
+name = "pepeeltoro41/ui-labs"
+version = "2.3.7"
 dependencies = []
