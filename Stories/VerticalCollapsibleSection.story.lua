@@ -15,13 +15,6 @@ local Fusion = require(Packages.Fusion)
 local Scope = Fusion.scoped(Fusion)
 local Children = Fusion.Children
 
--- type VerticalExpandingListProperties = {
--- 	Enabled: (boolean | types.StateObject<boolean>)?,
--- 	Collapsed: (boolean | types.Value<boolean>)?,
--- 	Padding: (UDim | types.StateObject<UDim>)?,
--- 	[any]: any,
--- }
-
 Story.fusion = Fusion
 
 Story.controls = {
